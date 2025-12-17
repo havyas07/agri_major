@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ChatBotPage extends StatefulWidget {
   const ChatBotPage({super.key});
@@ -12,13 +13,18 @@ class ChatBotPage extends StatefulWidget {
 class _ChatBotPageState extends State<ChatBotPage> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  final String apiKey = dotenv.env['OPENAI_API_KEY'] ?? "";
+
   List<Map<String, dynamic>> messages = [];
   bool _isTyping = false;
 
-  static const String apiKey = "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";
-
   Future<String> getReply(String userMessage) async {
     const String apiUrl = "https://api.openai.com/v1/chat/completions";
+
+    if (apiKey.isEmpty) {
+      return "❌ API Key not found. Check .env file.";
+    }
 
     try {
       final response = await http.post(
@@ -30,7 +36,10 @@ class _ChatBotPageState extends State<ChatBotPage> {
         body: jsonEncode({
           "model": "gpt-4.1-mini",
           "messages": [
-            {"role": "system", "content": "You are an agriculture expert chatbot for Indian farming."},
+            {
+              "role": "system",
+              "content": "You are an agriculture expert chatbot for Indian farming."
+            },
             {"role": "user", "content": userMessage},
           ]
         }),
@@ -40,10 +49,10 @@ class _ChatBotPageState extends State<ChatBotPage> {
         final result = jsonDecode(response.body);
         return result["choices"][0]["message"]["content"];
       } else {
-        return "⚠️ Server Error (${response.statusCode}) — Check API Key & Internet.";
+        return "⚠️ Server Error (${response.statusCode})";
       }
     } catch (e) {
-      return "❌ Error connecting to server: $e";
+      return "❌ Network Error: $e";
     }
   }
 
@@ -82,28 +91,26 @@ class _ChatBotPageState extends State<ChatBotPage> {
   }
 
   Widget messageBubble(Map msg) {
-    bool isUser = msg["role"] == "user";
-    Color bubbleColor = isUser ? Colors.green[300]! : Colors.grey[200]!;
-    Color textColor = isUser ? Colors.white : Colors.black87;
+    final isUser = msg["role"] == "user";
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        constraints: BoxConstraints(maxWidth: 0.75 * MediaQuery.of(context).size.width),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(isUser ? 12 : 0),
-            topRight: Radius.circular(isUser ? 0 : 12),
-            bottomLeft: const Radius.circular(12),
-            bottomRight: const Radius.circular(12),
-          ),
+          color: isUser ? Colors.green[400] : Colors.grey[300],
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           msg["text"],
-          style: TextStyle(fontSize: 16, color: textColor),
+          style: TextStyle(
+            color: isUser ? Colors.white : Colors.black87,
+            fontSize: 16,
+          ),
         ),
       ),
     );
@@ -111,7 +118,7 @@ class _ChatBotPageState extends State<ChatBotPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryGreen = Color(0xFF4CAF50);
+    const primaryGreen = Color(0xFF4CAF50);
 
     return Scaffold(
       appBar: AppBar(
@@ -123,62 +130,28 @@ class _ChatBotPageState extends State<ChatBotPage> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(vertical: 10),
               itemCount: messages.length,
-              itemBuilder: (context, index) => messageBubble(messages[index]),
+              itemBuilder: (context, index) =>
+                  messageBubble(messages[index]),
             ),
           ),
           if (_isTyping)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      SizedBox(
-                        width: 6,
-                        height: 6,
-                        child: CircleAvatar(backgroundColor: Colors.grey, radius: 3),
-                      ),
-                      SizedBox(width: 4),
-                      SizedBox(
-                        width: 6,
-                        height: 6,
-                        child: CircleAvatar(backgroundColor: Colors.grey, radius: 3),
-                      ),
-                      SizedBox(width: 4),
-                      SizedBox(
-                        width: 6,
-                        height: 6,
-                        child: CircleAvatar(backgroundColor: Colors.grey, radius: 3),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: Text("Bot is typing..."),
             ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(10),
             color: Colors.white,
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    style: const TextStyle(color: Colors.black87, fontSize: 16),
                     decoration: InputDecoration(
-                      hintText: "Ask about crops, fertilizers, soil...",
-                      hintStyle: TextStyle(color: Colors.grey[500]),
+                      hintText: "Ask about crops, soil, fertilizer...",
                       filled: true,
                       fillColor: Colors.green[50],
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25),
                         borderSide: BorderSide.none,
@@ -187,11 +160,8 @@ class _ChatBotPageState extends State<ChatBotPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: primaryGreen,
-                    shape: BoxShape.circle,
-                  ),
+                CircleAvatar(
+                  backgroundColor: primaryGreen,
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white),
                     onPressed: sendMessage,
@@ -199,7 +169,7 @@ class _ChatBotPageState extends State<ChatBotPage> {
                 )
               ],
             ),
-          ),
+          )
         ],
       ),
     );
