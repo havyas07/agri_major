@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'gsm.dart';
-import 'chatbot.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -28,7 +27,10 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     fetchSensorData();
-    timer = Timer.periodic(const Duration(seconds: 3), (_) => fetchSensorData());
+    timer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) => fetchSensorData(),
+    );
   }
 
   @override
@@ -57,7 +59,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Color statusColor(String value) =>
-      (value == "Dry" || value == "No Water") ? Colors.red : Colors.green[700]!;
+      (value.toLowerCase().contains("dry") ||
+          value.toLowerCase().contains("no"))
+      ? Colors.red
+      : Colors.green[700]!;
 
   @override
   Widget build(BuildContext context) {
@@ -101,21 +106,26 @@ class _DashboardPageState extends State<DashboardPage> {
                           color: Colors.green[900],
                         ),
                       ),
-                      Icon(Icons.agriculture_rounded, size: 36, color: primaryGreen),
+                      Icon(
+                        Icons.agriculture_rounded,
+                        size: 36,
+                        color: primaryGreen,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
 
-                  // Grid View
+                  // Sensor Grid
                   Expanded(
                     child: GridView.builder(
                       itemCount: sensorList.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 18,
-                        crossAxisSpacing: 18,
-                        childAspectRatio: 1,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 18,
+                            crossAxisSpacing: 18,
+                            childAspectRatio: 1,
+                          ),
                       itemBuilder: (context, index) {
                         final item = sensorList[index];
                         return sensorCard(
@@ -130,17 +140,23 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   const SizedBox(height: 10),
 
-                  // GSM Button
+                  // GSM Controls Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => GSMPage()));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => GSMPage()),
+                        );
                       },
                       icon: const Icon(Icons.signal_cellular_alt),
                       label: const Text(
                         "Open GSM Controls",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryGreen,
@@ -159,16 +175,11 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: primaryGreen,
-        child: const Icon(Icons.chat, size: 30),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatBotPage()));
-        },
-      ),
+      // ❌ Chatbot FAB removed
     );
   }
 
+  // Sensor Card Widget (Overflow Safe)
   Widget sensorCard(String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -197,12 +208,18 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
+
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
           ),
         ],

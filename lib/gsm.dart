@@ -3,20 +3,18 @@ import 'package:url_launcher/url_launcher.dart';
 
 class GSMPage extends StatelessWidget {
   final TextEditingController _phoneController = TextEditingController();
-  final String defaultNumber = "9480126962"; // Fixed recipient number
+  final String defaultNumber = "9620519556"; // Fixed recipient number
 
   GSMPage({super.key});
 
   /// Function to send SMS with given message
   Future<void> sendSMS(String command) async {
-    final Uri smsUri =
-    Uri.parse("sms:$defaultNumber?body=${Uri.encodeComponent(command)}");
+    final Uri smsUri = Uri.parse(
+      "sms:$defaultNumber?body=${Uri.encodeComponent(command)}",
+    );
 
     try {
-      await launchUrl(
-        smsUri,
-        mode: LaunchMode.externalApplication,
-      );
+      await launchUrl(smsUri, mode: LaunchMode.externalApplication);
     } catch (e) {
       print("❌ Error launching SMS: $e");
     }
@@ -44,7 +42,9 @@ class GSMPage extends StatelessWidget {
             ),
             ElevatedButton(
               child: const Text("Send"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green[700]),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[700],
+              ),
               onPressed: () {
                 final phoneNumber = _phoneController.text.trim();
                 if (phoneNumber.isEmpty) return;
@@ -71,7 +71,9 @@ class GSMPage extends StatelessWidget {
               ElevatedButton.icon(
                 icon: const Icon(Icons.power),
                 label: const Text("Turn ON Motor"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green[700]),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[700],
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                   sendSMS("#1"); // Motor ON
@@ -81,7 +83,9 @@ class GSMPage extends StatelessWidget {
               ElevatedButton.icon(
                 icon: const Icon(Icons.power_off),
                 label: const Text("Turn OFF Motor"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600]),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[600],
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                   sendSMS("#2"); // Motor OFF
@@ -151,9 +155,10 @@ class GSMPage extends StatelessWidget {
                           child: Text(
                             "📱 Register Mobile Number",
                             style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -182,9 +187,10 @@ class GSMPage extends StatelessWidget {
                           child: Text(
                             "⚙ Control Motor",
                             style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),

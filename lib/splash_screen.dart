@@ -20,8 +20,10 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    _animationController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
@@ -88,10 +90,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 50),
-                CircularProgressIndicator(
-                  color: accentColor,
-                  strokeWidth: 3,
-                ),
+                CircularProgressIndicator(color: accentColor, strokeWidth: 3),
               ],
             ),
           ),
